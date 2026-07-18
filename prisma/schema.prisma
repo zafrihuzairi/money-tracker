@@ -1,0 +1,191 @@
+// Money Tracker — Prisma schema
+// Design notes:
+// - AccountType represents the 5 "buckets" from the spec: Income, Daily, Outlay, Saving, Liability
+// - Bank holds the actual money; Account links a Bank to a bucket (AccountType)
+// - Category belongs to an AccountType and is used to classify Transactions
+// - MonthlyAllocationStatus tracks how much of the RM100 Investment / RM600 Marriage
+//   waterfall targets have already been filled in the current month
+// - Settings stores the split percentages so they are editable without touching code
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountType {
+  INCOME
+  DAILY
+  OUTLAY
+  SAVING
+  LIABILITY
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum IncomeType {
+  ALLOWANCE
+  JOB
+  DEBTOR
+  OTHER
+}
+
+enum DebtDirection {
+  THEY_OWE_ME
+  I_OWE_THEM
+}
+
+model User {
+  id                        String                     @id @default(cuid())
+  email                     String                     @unique
+  name                      String?
+  createdAt                 DateTime                   @default(now())
+  banks                     Bank[]
+  accounts                  Account[]
+  categories                Category[]
+  transactions              Transaction[]
+  people                    Person[]
+  liabilities               Liability[]
+  monthlyAllocationStatuses MonthlyAllocationStatus[]
+  settings                  Settings?
+}
+
+model Bank {
+  id           String        @id @default(cuid())
+  name         String
+  purpose      String?
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts     Account[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+
+  @@index([userId])
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  type         AccountType
+  name         String
+  bankId       String?
+  bank         Bank?         @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories   Category[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+
+  @@index([userId])
+  @@index([bankId])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  accountType  AccountType
+  accountId    String?
+  account      Account?      @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+
+  @@index([userId])
+  @@index([accountType])
+}
+
+model Person {
+  id           String        @id @default(cuid())
+  name         String
+  phone        String?
+  note         String?
+  createdAt    DateTime      @default(now())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId])
+}
+
+model Liability {
+  id           String   @id @default(cuid())
+  name         String
+  targetAmount Decimal  @db.Decimal(12, 2)
+  currentPaid  Decimal  @default(0) @db.Decimal(12, 2)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+model MonthlyAllocationStatus {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month              String // format: YYYY-MM
+  investmentReceived Decimal  @default(0) @db.Decimal(12, 2)
+  marriageReceived   Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([userId, month])
+}
+
+model Settings {
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Mode-1 / Mode-2 percentage split, applied to the amount remaining
+  // AFTER the Investment + Marriage waterfall has been deducted
+  dailyPercent     Decimal @default(10) @db.Decimal(5, 2)
+  outlayPercent    Decimal @default(70) @db.Decimal(5, 2)
+  savingPercent    Decimal @default(10) @db.Decimal(5, 2)
+  liabilityPercent Decimal @default(10) @db.Decimal(5, 2)
+  // split of the Liability bucket itself
+  fatherPercent    Decimal @default(50) @db.Decimal(5, 2)
+  iphonePercent    Decimal @default(50) @db.Decimal(5, 2)
+  // monthly waterfall targets
+  investmentTarget Decimal @default(100) @db.Decimal(12, 2)
+  marriageTarget   Decimal @default(600) @db.Decimal(12, 2)
+}
+
+model Transaction {
+  id             String           @id @default(cuid())
+  date           DateTime         @default(now())
+  bankId         String
+  bank           Bank             @relation(fields: [bankId], references: [id])
+  accountId      String
+  account        Account          @relation(fields: [accountId], references: [id])
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id])
+  personId       String?
+  person         Person?          @relation(fields: [personId], references: [id])
+  amount         Decimal          @db.Decimal(12, 2)
+  type           TransactionType
+  incomeType     IncomeType?
+  debtDirection  DebtDirection?
+  note           String?
+  attachment     String?
+  // links auto-generated split transactions back to the originating Job income
+  parentIncomeId String?
+  parentIncome   Transaction?     @relation("IncomeSplits", fields: [parentIncomeId], references: [id])
+  splitChildren  Transaction[]    @relation("IncomeSplits")
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([bankId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([personId])
+  @@index([date])
+}
