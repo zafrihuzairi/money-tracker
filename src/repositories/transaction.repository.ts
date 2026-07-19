@@ -67,9 +67,13 @@ export const transactionRepository = {
     prisma.transaction.findMany({
       where: { userId, ...filters },
       include: { bank: true, account: true, category: true, person: true },
-      // orderBy: [{ date: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }]
+      // id (cuid) sorts newest-first reliably. date/createdAt were tried first,
+      // but Postgres's now() is stable for the whole duration of a single
+      // transaction — so multiple rows inserted together (e.g. a Job income's
+      // auto-split children) all got an identical createdAt, breaking the
+      // tiebreak. cuid ids are generated per-row in the app layer, so they
+      // don't share that problem.
       orderBy: [{ id: 'desc' }]
-
     }),
 
   /**
@@ -82,9 +86,7 @@ export const transactionRepository = {
       prisma.transaction.findMany({
         where,
         include: { bank: true, account: true, category: true, person: true },
-        // orderBy: [{ date: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
         orderBy: [{ id: 'desc' }],
-
         skip: (page - 1) * pageSize,
         take: pageSize
       }),

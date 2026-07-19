@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,10 @@ export function TransactionsClient() {
     fetch('/api/people').then((r) => r.json()).then((d) => setPeople(d.people ?? []));
   }, []);
 
+  const requestIdRef = useRef(0);
+
   const fetchTransactions = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     const params = new URLSearchParams();
     params.set('page', String(page));
@@ -53,13 +56,16 @@ export function TransactionsClient() {
       if (v) params.set(k, v);
     });
     try {
-      const res = await fetch(`/api/transactions?${params.toString()}`);
+      const res = await fetch(`/api/transactions?${params.toString()}`, { cache: 'no-store' });
       const data = await res.json();
+      // Ignore this response if a newer request has since been issued
+      // (prevents an in-flight older request from overwriting fresher data).
+      if (requestId !== requestIdRef.current) return;
       setTransactions(data.transactions ?? []);
       setTotal(data.total ?? 0);
       setTotalPages(data.totalPages ?? 1);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [filters, page]);
 
