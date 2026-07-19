@@ -38,11 +38,21 @@ export function BottomSheet({
             onClick={onClose}
             aria-hidden
           />
+          {/*
+            Standardized dialog sizing (Issue 2):
+            - Mobile: never edge-to-edge. w-[92vw] with a capped max-width
+              keeps ~90-94% of the viewport with even side margins, and a
+              small bottom gap keeps it off the home indicator / safe area.
+            - Desktop/tablet: centered floating panel with a fixed max width.
+            - Rounded on every corner at every size (no more square bottom
+              edge on mobile) so it reads as one consistent dialog system
+              across every modal/drawer/bottom-sheet in the app.
+          */}
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="glass safe-bottom relative z-10 max-h-[85dvh] w-full overflow-y-auto rounded-t-[32px] border border-white/60 p-5 shadow-soft sm:max-w-md sm:rounded-[28px] sm:p-6"
+            className="glass safe-bottom relative z-10 mb-3 max-h-[85dvh] w-[92vw] max-w-[440px] overflow-y-auto rounded-[28px] border border-white/60 p-5 shadow-soft sm:mb-0 sm:w-full sm:max-w-md sm:p-6"
             initial={{ y: 60, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 60, opacity: 0, scale: 0.98 }}

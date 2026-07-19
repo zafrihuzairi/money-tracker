@@ -20,6 +20,11 @@ type SheetState = 'closed' | 'menu' | 'income' | 'expense';
  * - Income → Job/Freelance: hands off to the full /income page, since
  *   that's the only place the automatic allocation engine renders its
  *   breakdown. No allocation logic lives here.
+ *
+ * Desktop-only now: on mobile the (+) action lives inside MobileNav,
+ * merged directly into the bottom tab bar (see MobileNav.tsx) so it no
+ * longer floats as a separately-positioned element that can visually
+ * drift from the nav on press.
  */
 export function FAB() {
   const [sheet, setSheet] = useState<SheetState>('closed');
@@ -43,10 +48,9 @@ export function FAB() {
       <motion.button
         aria-label="Add transaction"
         onClick={() => setSheet('menu')}
-        className="glass fixed z-40 flex h-16 w-16 items-center justify-center rounded-full border border-white/50 text-white shadow-fab
+        className="glass fixed bottom-8 right-8 z-40 hidden h-16 w-16 items-center justify-center rounded-full border border-white/50 text-white shadow-fab
           bg-gradient-to-br from-gold-400 to-gold-600
-          bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2
-          md:bottom-8 md:left-auto md:right-8 md:translate-x-0"
+          md:flex"
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 400, damping: 22 }}

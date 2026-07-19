@@ -61,6 +61,28 @@ html.dark .glass {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
+/*
+  Form field width consistency fix.
+  Native <input type="date"> ships its own intrinsic min-content width
+  (driven by the locale's date-picker chrome), which can exceed the
+  column width Tailwind's `w-full` assigns it inside a CSS grid — grid
+  items default to `min-width: auto`, i.e. their content's minimum size,
+  not 0. That let the Date field stretch wider than its siblings even
+  though every field already carries `w-full`. Forcing box-sizing and
+  min-width: 0 on all form controls makes every field obey the grid
+  column/flex-basis width exactly, so Date, Amount, Select, etc. always
+  render the same width. Presentation-only — no field logic changes.
+*/
+input, select, textarea {
+  min-width: 0;
+  box-sizing: border-box;
+}
+input[type='date'],
+input[type='datetime-local'],
+input[type='time'] {
+  width: 100%;
+}
+
 ::-webkit-scrollbar { height: 6px; width: 6px; }
 ::-webkit-scrollbar-thumb { background: #e5decb; border-radius: 999px; }
 html.dark ::-webkit-scrollbar-thumb { background: #4a3a20; }

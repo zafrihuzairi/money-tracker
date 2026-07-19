@@ -47,7 +47,7 @@ export function ReportView() {
                 <YAxis fontSize={11} width={48} />
                 <Tooltip formatter={(v: number) => formatRM(v)} />
                 <Bar dataKey="income" fill="#c6902f" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" fill="#0a0a0b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" fill="#6e4820" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
