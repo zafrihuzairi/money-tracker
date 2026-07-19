@@ -1,22 +1,34 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { Sidebar } from '@/components/layout/Sidebar';
+import { AppShell } from '@/components/layout/AppShell';
+import { ThemeProvider, NO_FLASH_THEME_SCRIPT } from '@/components/theme/ThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Money Tracker',
   description: 'Personal Finance / Money Tracking System'
 };
 
+// viewportFit: 'cover' lets the safe-area-inset-* env() vars resolve on
+// notch / Dynamic Island devices instead of defaulting to 0.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#0a0a0b'
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 p-6 md:p-10">
-            <div className="mx-auto max-w-6xl space-y-8">{children}</div>
-          </main>
-        </div>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* runs before paint so dark-mode users never see a light-mode flash */}
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }} />
+      </head>
+      <body className="min-h-dscreen font-sans antialiased" suppressHydrationWarning>
+        <ThemeProvider>
+          <AppShell>{children}</AppShell>
+        </ThemeProvider>
       </body>
     </html>
   );

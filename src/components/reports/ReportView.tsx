@@ -35,12 +35,12 @@ export function ReportView() {
         </div>
 
         {!loading && rows.length > 0 && (
-          <div className="mb-8 h-72 w-full">
+          <div className="glass mb-8 h-64 w-full rounded-2xl p-3 sm:h-72 sm:p-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={rows}>
+              <BarChart data={rows} margin={{ left: -16, right: 4 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                <XAxis dataKey="label" fontSize={12} />
-                <YAxis fontSize={12} />
+                <XAxis dataKey="label" fontSize={11} tickMargin={8} />
+                <YAxis fontSize={11} width={48} />
                 <Tooltip formatter={(v: number) => formatRM(v)} />
                 <Bar dataKey="income" fill="#c6902f" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="expense" fill="#0a0a0b" radius={[4, 4, 0, 0]} />
@@ -49,7 +49,23 @@ export function ReportView() {
           </div>
         )}
 
-        <table className="w-full text-sm">
+        {/* Mobile: stacked cards */}
+        <div className="space-y-2 sm:hidden">
+          {rows.map((r) => (
+            <div key={r.label} className="rounded-2xl bg-black/[0.03] p-3">
+              <p className="mb-1 text-sm font-semibold">{r.label}</p>
+              <div className="flex justify-between text-xs">
+                <span className="text-green-600">In: {formatRM(r.income)}</span>
+                <span className="text-red-600">Out: {formatRM(r.expense)}</span>
+                <span className="font-medium">Net: {formatRM(r.net)}</span>
+              </div>
+            </div>
+          ))}
+          {rows.length === 0 && !loading && <p className="py-6 text-center text-sm text-black/30">No data yet.</p>}
+        </div>
+
+        {/* Desktop: table */}
+        <table className="hidden w-full text-sm sm:table">
           <thead>
             <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-black/40">
               <th className="py-2 pr-4">{groupBy}</th>

@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Dashboard</h1>
         <p className="text-sm text-black/40">Overview of your money system</p>
       </header>
 
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
 
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-black/40">Liability Progress</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {liabilities.map((l) => {
             const target = Number(l.targetAmount);
             const paid = Number(l.currentPaid);

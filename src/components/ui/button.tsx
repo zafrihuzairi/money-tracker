@@ -2,20 +2,32 @@ import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { ButtonHTMLAttributes, forwardRef } from 'react';
 
+/**
+ * Glass button system: gold-gradient primary, frosted-white secondary,
+ * soft-red danger. Every size meets the 44px minimum touch target.
+ * motion-reduce: disables the transform/scale so reduced-motion users
+ * don't get the lift/press animation.
+ */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition disabled:opacity-50 disabled:pointer-events-none',
+  'inline-flex min-h-touch items-center justify-center gap-2 rounded-2xl font-medium transition-all duration-200 ' +
+    'active:scale-[0.97] motion-reduce:active:scale-100 disabled:opacity-40 disabled:pointer-events-none ' +
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2',
   {
     variants: {
       variant: {
-        default: 'bg-black text-white hover:bg-gold-600',
-        gold: 'bg-gold-500 text-white hover:bg-gold-600',
-        outline: 'border border-black/10 bg-white hover:bg-black/5',
-        ghost: 'hover:bg-black/5',
-        destructive: 'bg-red-600 text-white hover:bg-red-700'
+        default:
+          'bg-gradient-to-b from-gold-400 to-gold-600 text-white shadow-[0_8px_20px_rgba(198,144,47,0.35)] hover:shadow-[0_10px_26px_rgba(198,144,47,0.45)] hover:brightness-105',
+        gold:
+          'bg-gradient-to-b from-gold-400 to-gold-600 text-white shadow-[0_8px_20px_rgba(198,144,47,0.35)] hover:shadow-[0_10px_26px_rgba(198,144,47,0.45)] hover:brightness-105',
+        outline:
+          'glass border border-black/10 text-ink-900 hover:bg-white/90',
+        ghost: 'text-ink-900 hover:bg-black/5',
+        destructive:
+          'bg-red-500/90 text-white shadow-[0_8px_20px_rgba(239,68,68,0.3)] hover:bg-red-500'
       },
       size: {
-        default: 'h-10 px-4 text-sm',
-        sm: 'h-8 px-3 text-xs',
+        default: 'h-11 px-5 text-sm',
+        sm: 'h-10 px-4 text-xs',
         lg: 'h-12 px-6 text-base'
       }
     },

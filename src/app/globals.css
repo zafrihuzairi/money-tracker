@@ -7,16 +7,119 @@
   --ink: 240 6% 6%;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 body {
   background-color: #fafafa;
   color: #0a0a0b;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+html.dark body {
+  background-color: #0a0a0b;
+  color: #f5f5f5;
+}
+
+/* momentum scrolling for horizontally-scrollable rows (bank slider) */
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.momentum-scroll > * {
+  scroll-snap-align: start;
+}
+
+/*
+  IMPORTANT: use `background-color`, never the `background` shorthand, here.
+  The shorthand resets `background-image` to `none`, which was silently
+  wiping out any bg-gradient-* Tailwind utility applied alongside `.glass`
+  (this caused the invisible Total Balance card and invisible FAB bug).
+*/
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-dark {
+  background-color: rgba(10, 10, 11, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html.dark .glass {
+  background-color: rgba(28, 28, 32, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 ::-webkit-scrollbar { height: 6px; width: 6px; }
 ::-webkit-scrollbar-thumb { background: #e5decb; border-radius: 999px; }
+html.dark ::-webkit-scrollbar-thumb { background: #4a3a20; }
+
+/* iOS safe-area helpers (used alongside Tailwind arbitrary values) */
+.safe-top { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-left { padding-left: env(safe-area-inset-left); }
+.safe-right { padding-right: env(safe-area-inset-right); }
+
+@media (min-width: 768px) {
+  .safe-bottom { padding-bottom: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Dark-mode color remap.
+   The app was built with fixed Tailwind utilities (text-black/40,
+   border-black/5, bg-white, ...) throughout ~25 files rather than
+   semantic tokens. Rather than touch every file, we remap exactly the
+   set of black/white utility classes actually used in this codebase so
+   they invert sensibly whenever an `html.dark` ancestor is present.
+   Colored utilities (gold, green, red) are intentionally left alone —
+   they already read fine on a dark background.
+--------------------------------------------------------------------- */
+html.dark .text-black,
+html.dark .text-ink-900 { color: #f5f5f5; }
+html.dark .text-black\/60 { color: rgba(245, 245, 245, 0.65); }
+html.dark .text-black\/55 { color: rgba(245, 245, 245, 0.6); }
+html.dark .text-black\/50 { color: rgba(245, 245, 245, 0.55); }
+html.dark .text-black\/40 { color: rgba(245, 245, 245, 0.45); }
+html.dark .text-black\/30 { color: rgba(245, 245, 245, 0.32); }
+html.dark .placeholder\:text-black\/30::placeholder { color: rgba(245, 245, 245, 0.28); }
+
+html.dark .border-black\/5 { border-color: rgba(255, 255, 255, 0.08); }
+html.dark .border-black\/10 { border-color: rgba(255, 255, 255, 0.12); }
+
+html.dark .bg-black\/5 { background-color: rgba(255, 255, 255, 0.06); }
+html.dark .bg-black\/10 { background-color: rgba(255, 255, 255, 0.1); }
+html.dark .bg-black\/30 { background-color: rgba(255, 255, 255, 0.2); }
+html.dark .bg-black\/\[0\.03\] { background-color: rgba(255, 255, 255, 0.04); }
+html.dark .bg-black\/\[0\.06\] { background-color: rgba(255, 255, 255, 0.07); }
+
+html.dark .bg-white\/90 { background-color: rgba(30, 30, 34, 0.9); }
+html.dark .border-white\/10,
+html.dark .border-white\/50,
+html.dark .border-white\/60 { border-color: rgba(255, 255, 255, 0.1); }
+
+/* bank-slider card gradient: warm white → gold in light mode reads as
+   muddy in dark mode, so swap it to a subtle dark-to-gold gradient */
+html.dark .from-white\/80 { --tw-gradient-from: rgba(32, 32, 36, 0.8) var(--tw-gradient-from-position); --tw-gradient-to: rgba(32, 32, 36, 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+html.dark .to-gold-50\/80 { --tw-gradient-to: rgba(92, 61, 31, 0.35) var(--tw-gradient-to-position); }
+
+html.dark .shadow-soft { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35); }
