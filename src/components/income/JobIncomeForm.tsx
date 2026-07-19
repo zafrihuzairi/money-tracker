@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatRM } from '@/lib/utils';
+import { notifyTransactionsChanged } from '@/lib/data-events';
 
 interface Breakdown {
   investment: number;
@@ -41,6 +42,7 @@ export function JobIncomeForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ? JSON.stringify(data.error) : 'Failed to allocate');
       setResult(data.breakdown);
+      notifyTransactionsChanged();
       setAmount('');
       setNote('');
     } catch (err: any) {
@@ -104,9 +106,15 @@ export function JobIncomeForm() {
 
 function BreakdownItem({ label, value, text, highlight }: { label: string; value: number; text?: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg p-3 ${highlight ? 'bg-gold-50' : 'bg-black/5'}`}>
+    <div
+      className={
+        highlight
+          ? 'rounded-lg border border-gold-200/70 bg-gold-50 p-3 dark:border-gold-500/30 dark:bg-gold-500/15'
+          : 'rounded-lg bg-black/5 p-3'
+      }
+    >
       <p className="text-[11px] uppercase tracking-wide text-black/40">{label}</p>
-      <p className="text-sm font-semibold">{text ?? formatRM(value)}</p>
+      <p className="text-sm font-semibold text-ink-900">{text ?? formatRM(value)}</p>
     </div>
   );
 }

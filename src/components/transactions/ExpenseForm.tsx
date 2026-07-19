@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { PersonQuickSelect } from '@/components/people/PersonQuickSelect';
 
 interface Bank { id: string; name: string; }
 interface Account { id: string; type: string; name: string; bankId: string | null; }
@@ -134,13 +135,12 @@ export function ExpenseForm({ onSaved, onCancel }: { onSaved: () => void; onCanc
           </Select>
         </div>
         <div>
-          <Label>Person (optional)</Label>
-          <Select value={personId} onChange={(e) => setPersonId(e.target.value)}>
-            <option value="">None</option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </Select>
+          <PersonQuickSelect
+            people={people}
+            value={personId}
+            onChange={setPersonId}
+            onPersonCreated={(p) => setPeople((prev) => [...prev, p])}
+          />
         </div>
       </div>
 

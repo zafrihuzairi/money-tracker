@@ -20,6 +20,7 @@ async function main() {
 
   // --- Banks -----------------------------------------------------------
   const bankDefs = [
+    { key: 'islam', name: 'Bank Islam', purpose: 'Income Distribution Hub (Job/Freelance income lands here first)' },
     { key: 'aeon', name: 'AEON Bank', purpose: 'Daily Usage' },
     { key: 'kaf', name: 'KAF Digital Bank', purpose: 'Commitment & Big Purchase' },
     { key: 'ryt', name: 'Ryt Invest SavePlus', purpose: 'Investment' },

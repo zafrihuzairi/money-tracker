@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { formatRM } from '@/lib/utils';
+import { onTransactionsChanged } from '@/lib/data-events';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface Row { label: string; income: number; expense: number; net: number; }
@@ -13,13 +14,16 @@ export function ReportView() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  function load() {
     setLoading(true);
     fetch(`/api/reports?groupBy=${groupBy}`)
       .then((r) => r.json())
       .then((d) => setRows(d.rows ?? []))
       .finally(() => setLoading(false));
-  }, [groupBy]);
+  }
+
+  useEffect(load, [groupBy]);
+  useEffect(() => onTransactionsChanged(load), [groupBy]);
 
   return (
     <Card>

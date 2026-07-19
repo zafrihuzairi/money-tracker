@@ -13,6 +13,7 @@ export const manualIncomeSchema = z.object({
   personId: z.string().optional(),
   debtDirection: z.enum(['THEY_OWE_ME', 'I_OWE_THEM']).optional(),
   note: z.string().optional(),
+  attachment: z.string().optional(),
   date: z.string().optional()
 });
 

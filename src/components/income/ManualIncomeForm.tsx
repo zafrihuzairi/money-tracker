@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { PersonQuickSelect } from '@/components/people/PersonQuickSelect';
+import { notifyTransactionsChanged } from '@/lib/data-events';
 
 interface Bank { id: string; name: string; }
 interface Category { id: string; name: string; accountType: string; }
@@ -15,13 +17,17 @@ export function ManualIncomeForm() {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
-  const [incomeType, setIncomeType] = useState('ALLOWANCE');
+
+  // Field order per spec: Date, Amount, Source, Bank, Account, Category, Person, Note, Attachment
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState('');
+  const [incomeType, setIncomeType] = useState('ALLOWANCE');
   const [bankId, setBankId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [personId, setPersonId] = useState('');
   const [debtDirection, setDebtDirection] = useState('THEY_OWE_ME');
   const [note, setNote] = useState('');
+  const [attachment, setAttachment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -41,19 +47,23 @@ export function ManualIncomeForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mode: 'MANUAL',
+          date,
           amount: Number(amount),
           incomeType,
           bankId,
           categoryId,
-          personId: incomeType === 'DEBTOR' ? personId : undefined,
-          debtDirection: incomeType === 'DEBTOR' ? debtDirection : undefined,
-          note
+          personId: personId || undefined,
+          debtDirection: incomeType === 'DEBTOR' && personId ? debtDirection : undefined,
+          note: note || undefined,
+          attachment: attachment || undefined
         })
       });
       if (!res.ok) throw new Error('Failed to save');
       setMessage('Saved.');
+      notifyTransactionsChanged();
       setAmount('');
       setNote('');
+      setAttachment('');
     } catch (err: any) {
       setMessage(err.message);
     } finally {
@@ -70,16 +80,20 @@ export function ManualIncomeForm() {
       <CardContent>
         <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label>Income Type</Label>
+            <Label>Date</Label>
+            <Input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
+          <div>
+            <Label>Amount (RM)</Label>
+            <Input type="number" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div>
+          <div>
+            <Label>Source (Income Type)</Label>
             <Select value={incomeType} onChange={(e) => setIncomeType(e.target.value)}>
               <option value="ALLOWANCE">Allowance</option>
               <option value="DEBTOR">Debtor</option>
               <option value="OTHER">Other Income</option>
             </Select>
-          </div>
-          <div>
-            <Label>Amount (RM)</Label>
-            <Input type="number" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <div>
             <Label>Bank</Label>
@@ -99,29 +113,28 @@ export function ManualIncomeForm() {
               ))}
             </Select>
           </div>
-          {incomeType === 'DEBTOR' && (
-            <>
-              <div>
-                <Label>Person</Label>
-                <Select value={personId} onChange={(e) => setPersonId(e.target.value)}>
-                  <option value="">Select person</option>
-                  {people.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <Label>Direction</Label>
-                <Select value={debtDirection} onChange={(e) => setDebtDirection(e.target.value)}>
-                  <option value="THEY_OWE_ME">They owe me</option>
-                  <option value="I_OWE_THEM">I owe them</option>
-                </Select>
-              </div>
-            </>
+          <PersonQuickSelect
+            people={people}
+            value={personId}
+            onChange={setPersonId}
+            onPersonCreated={(p) => setPeople((prev) => [...prev, p])}
+          />
+          {incomeType === 'DEBTOR' && personId && (
+            <div className="sm:col-span-2">
+              <Label>Direction</Label>
+              <Select value={debtDirection} onChange={(e) => setDebtDirection(e.target.value)}>
+                <option value="THEY_OWE_ME">They owe me</option>
+                <option value="I_OWE_THEM">I owe them</option>
+              </Select>
+            </div>
           )}
           <div className="sm:col-span-2">
             <Label>Note</Label>
             <Input value={note} onChange={(e) => setNote(e.target.value)} />
+          </div>
+          <div className="sm:col-span-2">
+            <Label>Attachment (optional URL)</Label>
+            <Input value={attachment} onChange={(e) => setAttachment(e.target.value)} placeholder="Receipt link" />
           </div>
           <div className="sm:col-span-2">
             <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Add Income'}</Button>

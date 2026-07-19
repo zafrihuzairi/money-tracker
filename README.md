@@ -45,6 +45,22 @@ Run the allocation engine's unit tests any time with:
 npm test
 ```
 
+## Resetting the Dataset
+
+Two options, depending on how much you want to wipe:
+
+**Soft reset — clear transactions only, keep your banks/categories/settings:**
+```bash
+npm run db:reset-data
+```
+Deletes every transaction, clears the monthly Ryt Invest/ASNB counters, and resets each liability's `currentPaid` back to 0. Banks, accounts, categories, people, and Settings are left untouched.
+
+**Full reset — wipe everything and start from scratch:**
+```bash
+npx prisma migrate reset
+```
+Drops and recreates the whole database, then automatically re-runs `prisma/seed.ts` (configured via the `"prisma": { "seed": ... }` block in `package.json`). Use this if your schema/config itself got into a bad state, not just the transaction data.
+
 ## Auth
 
 This scaffold runs in **single-user demo mode** (`getCurrentUserId()` in

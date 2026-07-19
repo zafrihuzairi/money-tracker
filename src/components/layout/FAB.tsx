@@ -7,6 +7,7 @@ import { Plus, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { BottomSheet } from '@/components/layout/BottomSheet';
 import { ExpenseForm } from '@/components/transactions/ExpenseForm';
 import { IncomeQuickForm } from '@/components/income/IncomeQuickForm';
+import { notifyTransactionsChanged } from '@/lib/data-events';
 
 type SheetState = 'closed' | 'menu' | 'income' | 'expense';
 
@@ -31,7 +32,8 @@ export function FAB() {
 
   function handleSaved() {
     setSheet('closed');
-    router.refresh(); // re-fetch server-rendered dashboard/reports/transactions data
+    notifyTransactionsChanged(); // tell any mounted client-fetch components (Transactions/Reports) to refetch
+    router.refresh(); // re-fetch server-rendered dashboard data
   }
 
   const sheetTitle = sheet === 'income' ? 'New Income' : sheet === 'expense' ? 'New Expense' : 'Add Transaction';
